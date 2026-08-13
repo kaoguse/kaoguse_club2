@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>考古社｜趣味体验</title>
+<style>
+*{box-sizing: border-box;margin:0;padding:0;font-family:"Microsoft Yahei",system-ui;}
+body{max-width:720px;margin:24px auto;padding:0 16px;background:#f7f5f2;color:#222;}
+h1,h2{text-align:center;margin:16px 0;color:#5c3c24;}
+.card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 8px #00000015;margin-bottom:24px;}
+.btn{padding:10px 18px;border:none;background:#7c5233;color:#fff;border-radius:8px;font-size:16px;cursor:pointer;margin:6px;}
+.btn:hover{background:#946542;}
+.question{border:1px solid #d4c8bc;padding:14px;border-radius:8px;margin:14px 0;}
+.opt{margin:8px 0;cursor:pointer;}
+#drawResult{min-height:80px;padding:12px;background:#faf4ec;border-radius:8px;margin:12px 0;white-space:pre-line;}
+#quizResult{padding:12px;border-radius:8px;margin:10px 0;}
+.right{background:#e8f5e9;color:#1b5e20;}
+.wrong{background:#ffebee;color:#b71c1c;}
+.switch-bar{text-align:center;margin:12px 0;}
+.hide{display:none;}
+</style>
+</head>
+<body>
+<h1>🏺考古社趣味小站</h1>
+<div class="switch-bar">
+    <button class="btn" onclick="switchPage('draw')">🎲抽取古代考古身份</button>
+    <button class="btn" onclick="switchPage('quiz')">📖盗墓笔记辨伪答题</button>
+</div>
+
+<!-- 模块A：随机抽官职 -->
+<div id="pageDraw" class="card">
+    <h2>随机解锁古代考古身份</h2>
+    <div id="drawResult">点击下方按钮抽取你的古代考古官职</div>
+    <div style="text-align:center">
+        <button class="btn" onclick="drawIdentity()">开始抽取</button>
+    </div>
+</div>
+
+<!-- 模块B：答题系统 -->
+<div id="pageQuiz" class="card hide">
+    <h2>盗墓笔记：小说 VS 真实历史</h2>
+    <div id="quizBox"></div>
+    <div id="quizResult"></div>
+    <div style="text-align:center;margin-top:10px;">
+        <button class="btn" onclick="nextQuestion()">下一题</button>
+        <button class="btn" onclick="restartQuiz()">重新答题</button>
+    </div>
+</div>
+
+<script>
+// --------------------------
+// 模块1：随机官职库
+// --------------------------
+const identityList = [
+    {
+        name:"太常寺奉礼郎",
+        work:"鉴别出土礼器，考据金石铭文，参与宗庙祭祀",
+        tag:"文物鉴定官｜金石考据爱好者｜古代文物研究员",
+        tip:"来考古社，复刻古人考据体验！"
+    },
+    {
+        name:"太卜",
+        work:"掌管甲骨卜骨，解读占卜记录，保管占卜遗存",
+        tag:"卜辞解读｜上古文献管理员",
+        tip:"尝试释读甲骨残片，就在考古社。"
+    },
+    {
+        name:"冢人",
+        work:"掌管王族墓葬规划，管理陵区，维护古墓",
+        tag:"墓葬规划师｜陵区管护官",
+        tip:"学习古代墓葬制度，欢迎加入社团。"
+    },
+    {
+        name:"陵署令",
+        work:"守护皇家陵园，监测陵区水土，登记陪葬器物档案",
+        tag:"皇陵守护者｜文物档案管理员",
+        tip:"一起了解汉唐帝陵背后的故事。"
+    },
+    {
+        name:"馆阁校理",
+        work:"整理出土金石拓片，对照古籍校正史料",
+        tag:"文献考据｜拓片研究",
+        tip:"社团可以体验模拟拓片趣味活动。"
+    },
+    {
+        name:"将作大匠",
+        work:"主持大型工程、帝陵营建，掌管土木工匠",
+        tag:"古代总工程师｜营建官员",
+        tip:"探索古代建筑与墓葬营造逻辑。"
+    },
+    {
+        name:"著作郎",
+        work:"收集石刻墓志，整理铭文，撰写史书",
+        tag:"石刻记录者｜历史撰稿人",
+        tip:"在社团练习史料辨析辨伪。"
+    },
+    {
+        name:"山陵使",
+        work:"皇帝驾崩，负责帝陵选址勘测，主持陵墓修建（宋代官职）",
+        tag:"皇家陵墓总负责人",
+        tip:"辨析不同时代官职，是考古辨伪的重要技巧。"
+    }
+];
+
+function drawIdentity(){
+    const item = identityList[Math.floor(Math.random()*identityList.length)];
+    const dom = document.getElementById("drawResult");
+    dom.innerText = `📜你抽到：${item.name}
+职能：${item.work}
+人设标签：${item.tag}
+
+${item.tip}`;
+}
+
+// --------------------------
+// 模块2：盗墓笔记答题完整题库
+// --------------------------
+const questionList = [
+    {
+        q:"1.《盗墓笔记》中“摸金校尉”说法最早出自？",
+        options:["A.《史记》","B.《三国志》裴松之注","C.《汉书》","D.《后汉书》"],
+        answer:1,
+        explain:"解析：摸金校尉出自裴松之注解《三国志》，是汉末临时设置，**并不是汉代常设正式官职**，小说做了大量艺术加工。"
+    },
+    {
+        q:"2.小说青铜树拥有物质化超能力，现实商代青铜神树出土于哪个遗址？",
+        options:["A.殷墟","B.三星堆","C.二里头","D.盘龙城"],
+        answer:1,
+        explain:"解析：三星堆青铜神树，真实文物没有任何玄幻超自然力量。"
+    },
+    {
+        q:"3.张起灵麒麟纹身遇热显现，古代真实墨刑纹身主要用途？",
+        options:["A.侠客身份标记","B.给罪犯施加的刑罚标记","C.贵族装饰","D.军队徽章"],
+        answer:1,
+        explain:"解析：墨刑属于刑罚，在犯人面部刺字，和小说纹身设定完全不同。"
+    },
+    {
+        q:"4.书中描写古墓遍布毒箭连环机关，现实考古的情况是？",
+        options:["A.王侯古墓普遍布满可以生效的致命暗器","B.史书有少量记载防盗机关，但发掘几乎遇不到还能运作的暗器","C.汉代之后每座大墓必有流沙毒弩","D.所有帝王地宫全部设置连环陷阱"],
+        answer:1,
+        explain:"解析：弓弩弓弦、木质构件极易腐朽，千百年后基本全部失效。"
+    },
+    {
+        q:"5.蛇眉铜鱼可以储存秘密记忆，现实鱼形铜件一般不会具备哪项功能？",
+        options:["A.佩饰","B.砝码","C.储存玄幻记忆信息","D.陪葬明器"],
+        answer:2,
+        explain:"解析：现实文物不能储存玄幻记忆，属于小说虚构设定。"
+    },
+    {
+        q:"6.小哥黑金古刀，真实汉代环首刀主要材质是？",
+        options:["A.陨铁黑金","B.高碳钢锻铁","C.纯铜","D.青铜"],
+        answer:1,
+        explain:"解析：汉代环首刀主流为锻铁钢材；陨铁器物数量极少，不是量产兵器。"
+    },
+    {
+        q:"7.张家古楼为山体巨墓，现实汉代诸侯王开山崖墓代表是？",
+        options:["A.满城汉墓","B.明定陵","C.殷墟大墓","D.曾侯乙墓"],
+        answer:0,
+        explain:"解析：满城汉墓，直接在山体岩石中开凿墓葬。"
+    },
+    {
+        q:"8.小说“粽子”代表尸变古尸，真实考古下面正确的是？",
+        options:["A.古墓经常发生尸变复活","B.隔绝环境可以出土干尸湿尸，但不存在尸变复活","C.所有古墓尸体都能保存完好","D.地下水浸泡尸体就会变成粽子"],
+        answer:1,
+        explain:"解析：特殊埋藏环境可以保存古尸，但不存在鬼怪尸变。"
+    },
+    {
+        q:"9.【判断题】摸金校尉、发丘中郎将是汉代长期正式常设官职",
+        options:["A.正确","B.错误"],
+        answer:1,
+        explain:"解析：仅仅汉末短期出现，不属于常设官职，后世大量为小说演绎。"
+    },
+    {
+        q:"10.【判断题】考古工作就是主动挖掘古墓寻找奇珍异宝",
+        options:["A.正确","B.错误"],
+        answer:1,
+        explain:"解析：我国考古以抢救性发掘为主，目的是保护文物，不是寻宝。"
+    },
+    {
+        q:"11.【判断题】东夏国蒲鲜万奴是真实历史，但万奴王蚰蜒共生是小说虚构",
+        options:["A.正确","B.错误"],
+        answer:0,
+        explain:"解析：东夏政权真实存在；蚰蜒共生、云顶天宫青铜门全部为文学创作。"
+    },
+    {
+        q:"12.【史料辨伪】下面哪一条是伪造史料？",
+        options:["A.“十年，蒲鲜万奴据辽东，僭号东夏，遂割据开原、延吉之地。——《金史·列传》”","B.“东夏万奴王，每代继位，必以蚰蜒为共生，筑云顶天宫于长白山巅，置青铜门以守终极。——《辽东旧记》"],
+        answer:1,
+        explain:"解析：B为伪造，《辽东旧记》这本书不存在；蚰蜒共生、青铜门全部来自盗墓笔记小说。"
+    }
+];
+
+let currentQ = 0;
+let score = 0;
+
+function renderQuiz(){
+    const q = questionList[currentQ];
+    let html = `<div class="question"><h4>${q.q}</h4>`;
+    q.options.forEach((opt,i)=>{
+        html += `<div class="opt">
+            <input type="radio" name="qa" id="opt${i}" value="${i}">
+            <label for="opt${i}">${opt}</label>
+        </div>`
+    })
+    html += `</div>`;
+    document.getElementById("quizBox").innerHTML = html;
+    document.getElementById("quizResult").innerHTML = "";
+}
+
+function nextQuestion(){
+    const q = questionList[currentQ];
+    const sel = document.querySelector('input[name="qa"]:checked');
+    if(!sel){
+        alert("请选择一个答案！");
+        return;
+    }
+    const idx = Number(sel.value);
+    let resDom = document.getElementById("quizResult");
+    if(idx === q.answer){
+        score++;
+        resDom.className = "right";
+        resDom.innerText = `✅回答正确！${q.explain}`;
+    }else{
+        resDom.className = "wrong";
+        resDom.innerText = `❌回答错误！${q.explain}`;
+    }
+    setTimeout(()=>{
+        currentQ++;
+        if(currentQ >= questionList.length){
+            document.getElementById("quizBox").innerHTML = `<h3>答题结束！你的得分：${score}/${questionList.length}</h3>
+            <p>分清小说幻想与真实考古，欢迎加入考古社！</p>`;
+            document.getElementById("quizResult").innerHTML = "";
+            return;
+        }
+        renderQuiz();
+    },2400);
+}
+
+function restartQuiz(){
+    currentQ = 0;
+    score = 0;
+    renderQuiz();
+}
+
+// --------------------------
+// 页面切换
+// --------------------------
+function switchPage(pageName){
+    document.getElementById("pageDraw").classList.add("hide");
+    document.getElementById("pageQuiz").classList.add("hide");
+    if(pageName === 'draw'){
+        document.getElementById("pageDraw").classList.remove("hide");
+    }else if(pageName === 'quiz'){
+        document.getElementById("pageQuiz").classList.remove("hide");
+        renderQuiz();
+    }
+}
+
+// 默认打开抽签页面
+switchPage('draw');
+</script>
+</body>
+</html>
